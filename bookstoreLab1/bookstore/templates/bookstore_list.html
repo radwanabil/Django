@@ -1,0 +1,50 @@
+{% extends 'main/base_layout.html' %}
+
+{# override block title #}
+
+{% block title %}
+    TODO task list
+{% endblock %}
+
+{# override body #}
+
+{% block main-content %}
+<div class="text-center mt-2">
+    <a class="btn btn-primary text-center" href="{% url 'bookstore:bookstore-create' %}">Create Book</a>
+</div>
+
+<table class="table table-condensed">
+ <thead>
+    <tr>
+        <td> ID </td>
+        <td> Name </td>
+        <td> Price </td>
+        <td> Description </td>
+        <td> Actions </td>
+    </tr>
+ </thead>
+ 
+ <tbody>
+    {% for book in books_list%}
+   <tr {% if book.price > 3000 %} style="color:red" {% else %} style="color:green" {% endif %} >
+    <td> {{ book.id }} </td>
+    <td> {{ book.name }} </td>
+    <td> {{ book.price }} </td>
+    <td> {{ book.description | truncatewords:2  | title }} </td>
+    
+    <td> 
+        <a class="btn btn-primary" href="{% url 'bookstore:bookstore-details' book.id %}">View</a>
+        <a class="btn btn-success" href="{% url 'bookstore:bookstore-update' book.id %}"> Update</a>
+        <a class="btn btn-danger" href="{% url 'bookstore:bookstore-delete' book.id %}"> Delete</a>
+    </td>
+   </tr>
+
+   {% empty %}
+   <tr>
+    <td colspan="3" class="text-center"> sorry, not book in list</td>
+   </tr>
+{% endfor %}
+ </tbody>
+
+</table>
+{% endblock %}
