@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
-# Create your views here.
-# def index(request):
-#     bookstore_list()
+from .models import Book
+from .forms import BookForm
+from django.views.decorators.csrf import csrf_exempt
 
 def index(request):
-    my_context = {'books_list': bookstore_list}
-    # template_loader > todo/templates/
-    return render(request, 'bookstore_list.html',context=my_context)
+    all_books = Book.objects.all()
+    return render(request, 'bookstore_list.html', context={"books": all_books})
 
 bookstore_list = [
     {
@@ -33,52 +32,39 @@ bookstore_list = [
     },
 ]
 
-def _get_book(book_id):
-    for book in bookstore_list:
-        if 'id' in book and book['id'] == book_id:
-            return book
-    return None
 
 def bookstore_details(request, *args, **kwrgs):
     book_id = kwrgs.get('book_id')
-    book_object = _get_book(book_id)
-    my_context = {
-        'book_id': book_object.get('id'),
-        'book_name': book_object.get('name'),
-        'book_price': book_object.get('price'),
-        'book_description': book_object.get('description')
-    }
-
-    return render(request, 'bookstore_details.html', context=my_context)
+    book = Book.objects.get(pk=book_id)
+    return render(request, 'bookstore_details.html', context={"book": book})
 
 def bookstore_delete(request, **kwargs):
     book_id = kwargs.get('book_id')
-    book_object = _get_book(book_id)
-    if bookstore_list:
-        bookstore_list.remove(book_object)
-    return redirect('bookstore:bookstore-list')   
+    Book.objects.get(pk=book_id).delete()
+    return redirect("bookstore:bookstore-list")
 
 def bookstore_update(request, **kwargs):
-    book_id = kwargs.get('book_id')
-    book_object = _get_book(book_id)
-    for book in bookstore_list:
-        if book == book_object:
-            book['name'] = f"Update {book_object['name']}"
-            
-    return redirect('bookstore:bookstore-list') 
+    book_id = kwargs.get('book_id') 
+    book = Book.objects.get(pk=book_id)
+    form = BookForm(instance=book)
+    if request.method == "PUT":
+        form = BookForm(data=request.POST, instance=book)
+        if form.is_valid():
+            form.save()
+            return redirect("bookstore:bookstore-details", pk=book.id)
+        
+    return render(request, 'bookstore_update.html', context={
+        'form': form, 
+        'book': book
+    })
 
 def create_new_book(request):
-    new_index = max(book['index'] for book in bookstore_list) + 1
-    new_book = {
-        'index': new_index,
-        'id': new_index + 1,
-        'name':"book" + str(new_index),
-        'price': 3000,
-        'description': "Book description",
-    }
-    
-    # Add the new task to the task list
-    bookstore_list.append(new_book)
-    
-    # Print a message to confirm that the task was added
-    return redirect('bookstore:bookstore-list')
+    form = BookForm()
+    if request.method == "POST":
+        form = BookForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("bookstore:bookstore-list")
+    return render(request, 'bookstore_create.html', context={
+        'form': form
+    })

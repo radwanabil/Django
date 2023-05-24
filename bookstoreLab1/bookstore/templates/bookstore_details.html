@@ -2,8 +2,8 @@
 
 
 {% block main-content %}
- <h1> Welcome to book details </h1>
- <table class="table">
+ <h1 class="text-center mt-3"> Welcome to book details </h1>
+ <table class="table table-striped mx-auto w-50 mt-5">
     <thead>
         <tr>
             <td> ID </td>
@@ -15,10 +15,10 @@
     <tbody>
 
      
-            <td>{{ book_id }} </td>
-            <td>{{ book_name }} </td>
-            <td> {{ book_price }}</td>
-            <td> {{ book_description | truncatewords:3 | title }} </td>
+            <td>{{ book.id }} </td>
+            <td>{{ book.name }} </td>
+            <td> {{ book.description }}</td>
+            <td> {{ book.author_name }} </td>
         </tr>
     </tbody>
 
